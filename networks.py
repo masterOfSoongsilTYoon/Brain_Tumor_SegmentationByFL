@@ -509,7 +509,7 @@ class Baseline_net(nn.Module):
         elif mode =="deeplab":
             self.encoder = OpenExtractor(in_channel=in_channel, backbone=backbone)
         elif mode =="mgunet":
-            self.encoder = MGUNet_2(in_channel, 1, 4)
+            self.encoder = MGUNet_2(in_channel, 1, 2)
         self.mode = mode
         self.data = data
         for module in self.encoder.modules():

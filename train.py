@@ -283,10 +283,10 @@ if __name__ == '__main__':
     save_csv(history1, 'train', a.version)
     save_csv(history2, 'valid', a.version)
     
-    ploting(history1, name= "train_"+a.version)
-    ploting(history1, "mIOU",  name= "train_"+a.version)
-    ploting(history1, "acc",  name= "train_"+a.version)
+    # ploting(history1, name= "train_"+a.version)
+    # ploting(history1, "mIOU",  name= "train_"+a.version)
+    # ploting(history1, "acc",  name= "train_"+a.version)
     
-    ploting(history2, name= "valid_"+ a.version)
-    ploting(history2, "mIOU",  name= "valid_"+ a.version)
-    ploting(history2, "acc",  name= "valid_"+ a.version)
+    # ploting(history2, name= "valid_"+ a.version)
+    # ploting(history2, "mIOU",  name= "valid_"+ a.version)
+    # ploting(history2, "acc",  name= "valid_"+ a.version)
