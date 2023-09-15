@@ -10,7 +10,7 @@ import torch.utils.data
 import torch.utils.data.distributed
 import warnings
 
-from utils import calculate_accuracy, calculate_mIOU, ploting, save_csv
+from utils import calculate_accuracy, calculate_mIOU, ploting, save_csv, PCA
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -26,7 +26,8 @@ def parserer():
     parser.add_argument('-c', "--classification", default=False, type=bool, metavar='N',
                         help='classifier mode')
     parser.add_argument('-m', "--multimodal", default=False, type=bool, metavar='N',
-                        help='classifier mode')
+                        help='multimodal mode')
+    
     parser.add_argument('-b', '--batch-size', default=8, type=int,
                         metavar='N',
                         help='mini-batch size (default: 8), this is the total '

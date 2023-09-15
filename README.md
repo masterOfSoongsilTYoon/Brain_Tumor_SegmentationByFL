@@ -54,5 +54,6 @@ Classifier Condition
 
 General **U-net** is the best model in this experiment, and Normal condition(only training unet condition) is better than other condition, In brain lgg data.
 
-Step2: Federated Leaning Brain Tumor(lower-grade glioma) Segmentation Training
+Step2: Federated Learning Brain Tumor(lower-grade glioma) Segmentation Training
 ---------
+# Future Work

@@ -1,10 +1,23 @@
+from typing import Any
 import torch
 from torch.nn.functional import one_hot
 from torchmetrics.classification import BinaryJaccardIndex
 import matplotlib.pyplot as plt
 import pandas as pd
 import cv2
-
+class PCA:
+    def __init__(self, out_sample_images) -> None:
+        self.out_images = out_sample_images
+        
+    def __call__(self, target_size,*args: Any, **kwds: Any) -> Any:
+        num = self.out_images.size(0)
+        out = self.out_images.reshape((num,-1))
+        _,_,V=torch.pca_lowrank(out, center=True, niter=3)
+        zresult=torch.matmul(out.T, V.T[:, :5000])
+        xapprox  = torch.matmul(V.T[:, :5000], zresult.T)
+        result = xapprox.reshape((num, *target_size))
+        return result
+    
 def calculate_accuracy(predictions, targets,threshold:float):
     """
     Calculates the accuracy of predictions given the target labels.

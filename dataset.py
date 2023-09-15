@@ -101,28 +101,32 @@ class CustomDataset():
         elif self.mode == "brain":
             image = cv2.imread(sample["path"], cv2.IMREAD_COLOR)
             label = cv2.imread(sample["class"], cv2.IMREAD_GRAYSCALE)
+            plabel = cv2.imread(sample["class"], cv2.IMREAD_COLOR)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             
             image_ = self.background1(image)
             label_ = self.background2(label)
-            
+            plabel_ = self.background1(plabel)
             if self.transform:
-                transformed = self.transformed(image=image_, label=label_)
+                transformed = self.transformed(image=image_, label=label_, plabel=plabel_)
                 image_ = transformed["image"]
                 label_ = transformed["label"]
-            
+                plabel = transformed["plabel"]
             ret={}
             image_= self.to_tensor(image_)
             label_= self.to_tensor(label_)
-            
+            plabel_= self.to_tensor(plabel_)
             
             image_ = self.normalize(image_)
             label_ = self.normalize(label_)
+            plabel_ = self.normalize(plabel_)
             
             ret["id"] = sample["path"].split("/")[-1]
-            ret["class"] = [int(i) for i, v in enumerate(self.kind) if v in ret["id"]]
+            # ret["class"] = [int(i) for i, v in enumerate(self.kind) if v in ret["id"]]
             ret["image"] = image_
             ret["label"] = label_
             ret["pilimage"] = self.to_pil(image_.squeeze())
+            # ret["plabel"] = plabel_
             return ret
     def __len__(self):
         return len(self.df)
