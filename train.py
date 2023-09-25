@@ -21,6 +21,8 @@ def parserer():
     parser.add_argument("--data", type=str, default='OCT', help="[OCT, brain]")
     parser.add_argument('--epochs', default=100, type=int, metavar='N',
                         help='number of total epochs to run')
+    parser.add_argument('--num', default=1, type=int, metavar='N',
+                        help='client number')
     parser.add_argument('--lr', default=1e-3, type=float, metavar='N',
                         help='learning rate')
     parser.add_argument('-c', "--classification", default=False, type=bool, metavar='N',
@@ -147,7 +149,7 @@ def train(net, train_dataloader, criterion, optimizer, valid_dataloader, a ,cent
         
         if central_mode:
             print(f"Train==> epoch: {epoch}, loss: {sum(step_loss_list)/len(step_loss_list)}, acc: {acc/(i+1)}, mIou: {(iou/(i+1)).item()}")
-            history2 = eval(net,net.parameters(), valid_dataloader, criterion, central_mode, classifier, data=data, multimodal=multimodal)  
+            history2 = eval(net,net.parameters(), valid_dataloader, criterion, central_mode, classifier, data=data, multimodal=multimodal, a=a)  
         if data =="OCT":
             torch.save(net.state_dict(), f"./models/{a.version}/net.pkl")     
         elif data =="brain":
@@ -159,9 +161,12 @@ def train(net, train_dataloader, criterion, optimizer, valid_dataloader, a ,cent
                 l=["CS", "DU", "EZ", "FG", "HT"]
                 for indx, n in enumerate(net):
                     torch.save(n.stae_dict(), f"./models/{a.version}/{l[indx]}_net.pkl")
-    return history, history2        
+    if central_mode:
+        return history, history2        
+    else:
+        return history
             
-def eval(net, parameters, valid_dataloader, criterion, central_mode, classifier=None, data="OCT", multimodal=False):
+def eval(net, parameters, valid_dataloader, criterion, central_mode, classifier=None, data="OCT", multimodal=False, a=None):
     history={"loss":[], "acc":[], "mIOU":[]}
     with torch.no_grad():
         net.eval()
