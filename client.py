@@ -12,6 +12,9 @@ import argparse
 import pandas as pd
 import numpy as np
 from train import parserer
+import random
+import warnings
+from loss import FocalLoss
 # parser = argparse.ArgumentParser()
 # parser.add_argument('--epochs', default=1, type=int, metavar='N',
 #                     help='number of total epochs to run')
@@ -28,7 +31,7 @@ def set_parameters(net:torch.nn.Module, parameters:list, *kargs) -> None:
     # Set model parameters from a list of NumPy ndarrays
     keys = [k for k in net.state_dict().keys()]
     params_dict = zip(keys, parameters)
-    state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
+    state_dict = OrderedDict({k: torch.tensor(v, dtype=torch.float32) for k, v in params_dict})
     net.load_state_dict(state_dict, strict=False)
         
 
@@ -55,17 +58,26 @@ class FlowerClient(fl.client.NumPyClient):
         
     def fit(self, parameters, config):
         self.set_parameters(parameters)
-        train(self.net, self.train_loader, torch.nn.BCELoss().to(DEVICE), torch.optim.SGD(self.net.parameters(), lr=1e-4), None, self.a, False, data=a.data)
+        train(self.net, self.train_loader, torch.nn.BCELoss().to(DEVICE), torch.optim.SGD(self.net.parameters(), self.a.lr), None, self.a, False, data=a.data)
         return self.get_parameters({}), len(self.train_loader.dataset),{}
     def evaluate(self, parameters, *kargs) -> Tuple[float, int, Dict[str, Scalar]]:
         self.set_parameters(parameters)
-        history = eval(self.net, self.net.parameters(), self.valid_loader, torch.nn.BCELoss().to(DEVICE), False, data="brain",a=self.a)
-        return sum(history["loss"])/len(history["loss"]), len(self.valid_loader.dataset), {"accuracy": sum(history["acc"])/len(history["acc"])}
+        history = eval(self.net, self.valid_loader,torch.nn.BCEWithLogitsLoss().to(DEVICE), False, data="brain",a=self.a)
+        return history["loss"][0], len(self.valid_loader.dataset), {"accuracy": history["mIOU"][0]}
     
 if __name__ == "__main__":
-    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     a = parserer()
-    net = Baseline_net(3, "unet", "brain").to(DEVICE)
+    torch.manual_seed(a.seed)
+    np.random.seed(a.seed)
+    random.seed(a.seed)
+    torch.cuda.manual_seed(a.seed)
+    torch.cuda.manual_seed_all(a.seed)
+    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    warnings.filterwarnings(action='ignore')
+    
+    net = Baseline_net(1, "unet", "brain").to(DEVICE)
+    if a.transfered is not None:
+        net.load_state_dict(torch.load(a.transfered))
     client_id = a.num
     df = pd.read_csv(f'./CSV/brain_train_client{client_id}.csv')
     valid_df = pd.read_csv(f'./CSV/brain_valid_client{client_id}.csv')
@@ -73,4 +85,4 @@ if __name__ == "__main__":
     valid_dataset = CustomDataset(valid_df, transform=False, mode="brain")
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=a.batch_size, shuffle=True, num_workers=0, collate_fn = lambda x: x)
     valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=a.batch_size, shuffle=False, num_workers=0, collate_fn = lambda x: x)
-    fl.client.start_numpy_client(server_address="203.253.25.173:8082", client=FlowerClient(net, train_loader, valid_loader, DEVICE, client_id, a=a))
+    fl.client.start_numpy_client(server_address="203.253.25.173:8085", client=FlowerClient(net, train_loader, valid_loader, DEVICE, client_id, a=a))

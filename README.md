@@ -26,7 +26,7 @@ Step1: Centralized Brain Tumor(lower-grade glioma) Segmentation Training
 
 
 * Loss By Each Models (Unet, MGUnet, DeeplabV3_Backbone)
-![IOU](./Plot/loss_output.png) 
+![Loss](./Plot/loss_output.png) 
 
     Look likes, All model are similar loss decling
 # Guess
@@ -46,7 +46,7 @@ Classifier Condition
 
               prediction                          Label
 
-![Classifierunet](./Plot/normal_TCGA_CS_4941_19960909_11.png)
+![Normalunet](./Plot/normal_TCGA_CS_4941_19960909_11.png)
 
               prediction                          Label
 
@@ -56,4 +56,4 @@ General **U-net** is the best model in this experiment, and Normal condition(onl
 
 Step2: Federated Learning Brain Tumor(lower-grade glioma) Segmentation Training
 ---------
-# Future Work
+![FLvsCT](./Plot/FL_CT_mIOU.png)

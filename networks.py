@@ -8,9 +8,9 @@ from typing import Dict
 import torch.nn.functional as F
 
 class Extractor(nn.Module):
-    def __init__(self, pretrained=False,*args, **kwargs) -> None:
+    def __init__(self, pretrained=False,in_channel=3,*args, **kwargs) -> None:
         super(Extractor, self).__init__(*args, **kwargs)
-        self.encoder1 = self.Unet_block(3, 32, "enc1")
+        self.encoder1 = self.Unet_block(in_channel, 32, "enc1")
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.encoder2 = self.Unet_block(32, 64, "enc2")
         self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
@@ -498,12 +498,11 @@ class Baseline_net(nn.Module):
             submodule.bias.data.zero_()
         elif isinstance(submodule, torch.nn.Linear):
             torch.nn.init.kaiming_uniform_(submodule.weight, a=math.sqrt(5))
-    def __init__(self,in_channel= 1,mode="unet", data="OCT", backbone="101"):
+    def __init__(self,in_channel= 1,mode="unet", data="OCT", backbone="101", mergenet_mode=False):
         super(Baseline_net, self).__init__()
         if mode == "unet":
             if in_channel==1:
-                self.encoder = nn.Sequential(nn.Conv2d(1,3,1,1,0,1,bias=False),
-                                             Extractor(pretrained=False))
+                self.encoder = Extractor(pretrained=False, in_channel=1)
             else:
                 self.encoder =  Extractor(pretrained=False)
         elif mode =="deeplab":
@@ -512,12 +511,19 @@ class Baseline_net(nn.Module):
             self.encoder = MGUNet_2(in_channel, 1, 2)
         self.mode = mode
         self.data = data
+        self.mergenet_mode = mergenet_mode
+        if mergenet_mode:
+            self.mergenet = nn.Sequential(Mergenet(2))
+            self.encoder_list = nn.ModuleList(list(self.encoder.modules()))
+            self.mergenet_list = nn.ModuleList(list(self.mergenet.modules()))
+           
         for module in self.encoder.modules():
             self.weight_init_xavier_uniform(module)
         
     def forward(self, x):
         """ Forward propagation with input 'x'. """
-        out = self.encoder(x)
+        out = self.encoder(x["x"])
+        
         if self.mode=="unet":
             return out
         elif self.mode =="deeplab":
@@ -525,3 +531,24 @@ class Baseline_net(nn.Module):
         elif self.mode =="mgunet":
             return out
         
+        
+class Mergenet(nn.Module):
+    """ Classification network of emotion categories based on ResNet18 structure. """
+    def weight_init_xavier_uniform(self, submodule):
+        if isinstance(submodule, torch.nn.Conv2d):
+            torch.nn.init.xavier_uniform_(submodule.weight)
+        elif isinstance(submodule, torch.nn.BatchNorm2d):
+            submodule.weight.data.fill_(1.0)
+            submodule.bias.data.zero_()
+        elif isinstance(submodule, torch.nn.Linear):
+            torch.nn.init.kaiming_uniform_(submodule.weight, a=math.sqrt(5))
+    def __init__(self,in_channel:int):
+        super(Mergenet, self).__init__()
+        self.encoder = nn.Sequential(nn.Conv2d(in_channel,1,1,1,0,1,bias=False),
+                                     nn.Sigmoid())
+            
+        for module in self.encoder.modules():
+            self.weight_init_xavier_uniform(module)
+        
+    def forward(self, x):
+        return self.encoder(x)

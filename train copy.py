@@ -9,9 +9,9 @@ import torch
 import torch.utils.data
 import torch.utils.data.distributed
 import warnings
-from loss import FocalLoss
 
-from utils import calculate_accuracy, calculate_mIOU, save_csv, calculate_f1Score, calculate_DiceCE
+
+from utils import calculate_accuracy, calculate_mIOU, save_csv, calculate_f1Score, calculate_DiceCE, DiceCELoss
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -163,7 +163,7 @@ def eval(net, valid_dataloader, criterion, central_mode, data="OCT",  a=None):
                 out = out.type(torch.float64).to(DEVICE)
                 loss = criterion(out.squeeze(), out_sample['label'].type(torch.float64).to(DEVICE).squeeze())
                 # loss = criterion(out.squeeze(), out_sample["label"].squeeze())
-                iou+= calculate_mIOU(out, out_sample["label"].squeeze(), 0.4, DEVICE)
+                iou+= calculate_mIOU(out.squeeze(), out_sample["label"].squeeze(), 0.4, DEVICE)
                 acc+= calculate_accuracy(out_sample['label'].cpu().squeeze().detach().numpy(), out.cpu().squeeze().detach().numpy(),0.4)
                 f1sc+= calculate_f1Score(out_sample['label'].cpu().squeeze().detach().numpy(), out.cpu().squeeze().detach().numpy(),0.4)
                 dices+= calculate_DiceCE(out.squeeze(), out_sample["label"].squeeze())
@@ -206,10 +206,10 @@ def main(a):
     if a.transfered is not None:
         net.load_state_dict(torch.load(a.transfered))
     dataName = f"{a.data}_"
-    df = pd.read_csv(f"./CSV/{dataName}train_central.csv")
+    df = pd.read_csv(f"./CSV/{dataName}train2_central.csv")
     train_dataset = CustomDataset(df, transform=False, mode=a.data)
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size= a.batch_size, shuffle=True, num_workers=0, collate_fn = lambda x:x)
-    valid_df = pd.read_csv(f'./CSV/{dataName}valid_central.csv')
+    valid_df = pd.read_csv(f'./CSV/{dataName}valid2_central.csv')
     valid_dataset = CustomDataset(valid_df, transform=False, mode=a.data)
     valid_dataloader = torch.utils.data.DataLoader(valid_dataset, batch_size=a.batch_size, shuffle=False, num_workers=0,collate_fn = lambda x: x)
     
