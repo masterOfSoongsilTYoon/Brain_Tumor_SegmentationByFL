@@ -85,4 +85,4 @@ if __name__ == "__main__":
     valid_dataset = CustomDataset(valid_df, transform=False, mode="brain")
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=a.batch_size, shuffle=True, num_workers=0, collate_fn = lambda x: x)
     valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=a.batch_size, shuffle=False, num_workers=0, collate_fn = lambda x: x)
-    fl.client.start_numpy_client(server_address="203.253.25.173:8085", client=FlowerClient(net, train_loader, valid_loader, DEVICE, client_id, a=a))
+    fl.client.start_numpy_client(server_address="[:,:]:8085", client=FlowerClient(net, train_loader, valid_loader, DEVICE, client_id, a=a))

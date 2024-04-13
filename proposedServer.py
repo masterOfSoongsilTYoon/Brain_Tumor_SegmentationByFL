@@ -180,7 +180,7 @@ if __name__ == "__main__":
     
     warnings.filterwarnings(action='ignore')
     history=fl.server.start_server(
-        server_address="203.253.25.173:8085",
+        server_address="[:,:]:8085",
         config= fl.server.ServerConfig(num_rounds=200),
         strategy=Custom_straegy(net=Baseline_net(1,data="brain"),min_fit_clients=5, min_available_clients=5, min_evaluate_clients=5, evaluate_fn=evaluate_fn),
         
