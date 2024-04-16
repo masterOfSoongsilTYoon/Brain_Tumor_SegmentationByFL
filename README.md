@@ -146,8 +146,8 @@ $$\omega = \sum\limits_{k\in\mathbb{C}} ( \alpha \times \frac{s_k}{S} + \beta\ti
 여기서 $D$ 는수집된 클라이언트들의 dice-coefficient 함수값의
 합이다. $d_k$ 는 $k$ 번째 클라이언트의 dice-coefficient 함수값이
 다. 
-함수 ${d_k}$ 의 정의는 $dk = \frac{c(Mt)}
-{c(Mt−1)}$ 로 $c_k$ 의 분모 분자를 바꾼형태와 같다. $\alpha+\beta+\gamma=1$ 을 만족한다. 각각의 지
+함수 ${d_k}$ 의 정의는 $dk = \frac{d(Mt)}
+{d(Mt−1)}$ 로 $c_k$ 의 분모 분자를 바꾼형태와 같다. $\alpha+\beta+\gamma=1$ 을 만족한다. 각각의 지
 표는 하이퍼파라미터이며 실험에서는 각각 0.5, 0.25, 0.25 로 설정하였다.
 <center>
 <table border="1">
